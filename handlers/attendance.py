@@ -1,19 +1,14 @@
-from telegram import Update
-from telegram.ext import ContextTypes
-
-async def attendance_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Attendance module\n"
-        "Here we will calculate:\n"
-        "- attendance percentage\n"
-        "- allowed absences"
-    )
-
-from utils.keyboards import attendance_keyboard
+def calculate_attendance(total_classes, missed_classes):
+    attended = total_classes - missed_classes
+    attendance = (attended / total_classes) * 100
+    return round(attendance, 2)
 
 
-async def attendance_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Attendance Module\nChoose an option:",
-        reply_markup=attendance_keyboard()
-    )
+def calculate_allowed_absences(total_classes, missed_classes, minimum_percent=70):
+    max_missed = total_classes - (total_classes * minimum_percent / 100)
+    allowed_left = int(max_missed - missed_classes)
+
+    if allowed_left < 0:
+        return 0
+
+    return allowed_left
