@@ -1,27 +1,25 @@
-from telegram import ReplyKeyboardMarkup
+await update.message.reply_text(
+                f"You can still miss {allowed} classes."
+            )
 
+            context.user_data.clear()
 
-def main_menu_keyboard():
-    keyboard = [
-        ["Grades", "Attendance"],
-        ["Deadlines", "Schedule"]
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        except ValueError:
+            await update.message.reply_text(
+                "Please enter 2 numbers correctly.\nExample: 30 5"
+            )
 
+    elif text == "Deadlines":
+        await update.message.reply_text(
+            "Deadlines module will be added in the next update."
+        )
 
-def grades_keyboard():
-    keyboard = [
-        ["Calculate Total"],
-        ["Needed Score"],
-        ["Back"]
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    elif text == "Schedule":
+        await update.message.reply_text(
+            "Schedule module will be added in the next update."
+        )
 
-
-def attendance_keyboard():
-    keyboard = [
-        ["Calculate Attendance"],
-        ["Allowed Absences"],
-        ["Back"]
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    else:
+        await update.message.reply_text(
+            "Please choose an option from the menu."
+        )
