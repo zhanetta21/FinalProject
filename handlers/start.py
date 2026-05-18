@@ -12,7 +12,7 @@ from utils.keyboards import (
 from utils.helpers import load_json, save_json
 
 from handlers.grades import calculate_total, calculate_needed_score, get_grade_status
-from handlers.attendance import calculate_attendance, calculate_allowed_absences
+from handlers.attendance import calculate_attendance, calculate_allowed_absences, check_attendance_status
 
 
 DEADLINES_FILE = "data/deadlines.json"
