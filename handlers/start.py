@@ -18,6 +18,7 @@ from handlers.attendance import (
     check_attendance_status
 )
 
+from models import Deadline, ScheduleItem
 
 DEADLINES_FILE = "data/deadlines.json"
 SCHEDULE_FILE = "data/schedule.json"
@@ -243,9 +244,11 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             deadlines = load_json(DEADLINES_FILE)
 
+            deadline = Deadline(subject.strip(), date.strip())
+
             deadlines.append({
-                "subject": subject.strip(),
-                "date": date.strip()
+                "subject": deadline.title,
+                "date": deadline.date
             })
 
             save_json(DEADLINES_FILE, deadlines)
@@ -317,14 +320,16 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             schedule = load_json(SCHEDULE_FILE)
 
+            schedule_item = ScheduleItem(
+                day.strip(),
+                subject.strip(),
+                time.strip()
+            )
+
             schedule.append({
-
-                "day": day.strip(),
-
-                "subject": subject.strip(),
-
-                "time": time.strip()
-
+                "day": schedule_item.day,
+                "subject": schedule_item.title,
+                "time": schedule_item.time
             })
 
             save_json(SCHEDULE_FILE, schedule)
