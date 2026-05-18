@@ -306,16 +306,25 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             await update.message.reply_text(message)
 
+
     elif context.user_data.get("mode") == "add_schedule":
+
         try:
+
+            text = text.replace("–", "-").replace("—", "-")
+
             day, subject, time = text.split("-", 2)
 
             schedule = load_json(SCHEDULE_FILE)
 
             schedule.append({
+
                 "day": day.strip(),
+
                 "subject": subject.strip(),
+
                 "time": time.strip()
+
             })
 
             save_json(SCHEDULE_FILE, schedule)
@@ -324,9 +333,13 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             context.user_data.clear()
 
+
         except ValueError:
+
             await update.message.reply_text(
+
                 "Wrong format.\nExample: Monday - Python - 10:00"
+
             )
 
     else:
