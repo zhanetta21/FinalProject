@@ -25,3 +25,22 @@ def attendance_keyboard():
         ["Back"]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+
+def deadlines_keyboard():
+    keyboard = [
+        ["Add Deadline"],
+        ["View Deadlines"],
+        ["Delete Deadline"],
+        ["Back"]
+    ]
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+
+def schedule_keyboard():
+    keyboard = [
+        ["Add Schedule"],
+        ["View Schedule"],
+        ["Back"]
+    ]
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
