@@ -12,7 +12,11 @@ from utils.keyboards import (
 from utils.helpers import load_json, save_json
 
 from handlers.grades import calculate_total, calculate_needed_score, get_grade_status
-from handlers.attendance import calculate_attendance, calculate_allowed_absences, check_attendance_status
+from handlers.attendance import (
+    calculate_attendance,
+    calculate_allowed_absences,
+    check_attendance_status
+)
 
 
 DEADLINES_FILE = "data/deadlines.json"
@@ -71,118 +75,88 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text == "Calculate Total":
         context.user_data["mode"] = "calculate_total"
         await update.message.reply_text(
-            "Enter regmid, regend and final scores separated by spaces.\nExample: 25 30 35"
+            "Enter regmid, regend and final scores separated by spaces.\n"
+            "Example: 80 75 90"
         )
 
     elif text == "Needed Score":
         context.user_data["mode"] = "needed_score"
         await update.message.reply_text(
-            "Enter regmid, regend and target score separated by spaces.\nExample: 25 30 70"
+            "Enter regmid, regend and target score separated by spaces.\n"
+            "Example: 80 75 70"
         )
-
 
     elif context.user_data.get("mode") == "calculate_total":
-    try:
-        regmid, regend, final = map(float, text.split())
+        try:
+            regmid, regend, final = map(float, text.split())
 
-        if regmid < 0 or regend < 0 or final < 0:
-            await update.message.reply_text("Scores cannot be negative.")
-            return
+            if regmid < 0 or regend < 0 or final < 0:
+                await update.message.reply_text("Scores cannot be negative.")
+                return
 
-        total = calculate_total(regmid, regend, final)
-        status = get_grade_status(total)
+            total = calculate_total(regmid, regend, final)
+            status = get_grade_status(total)
 
-        await update.message.reply_text(
-            f"Regmid: {regmid} × 0.3 = {round(regmid * 0.3, 2)}\n"
-            f"Regend: {regend} × 0.3 = {round(regend * 0.3, 2)}\n"
-            f"Final: {final} × 0.4 = {round(final * 0.4, 2)}\n\n"
-            f"Total score: {total}\n"
-            f"Grade: {status}"
-        )
-
-        context.user_data.clear()
-
-    except ValueError:
-        await update.message.reply_text(
-            "Please enter 3 numbers correctly.\nExample: 80 75 90"
-        )
+            await update.message.reply_text(
+                f"Regmid: {regmid} × 0.3 = {round(regmid * 0.3, 2)}\n"
+                f"Regend: {regend} × 0.3 = {round(regend * 0.3, 2)}\n"
+                f"Final: {final} × 0.4 = {round(final * 0.4, 2)}\n\n"
+                f"Total score: {total}\n"
+                f"Grade: {status}"
+            )
 
             context.user_data.clear()
 
-
         except ValueError:
-
             await update.message.reply_text(
-
-                "Please enter 3 numbers correctly.\nExample: 25 30 35"
-
+                "Please enter 3 numbers correctly.\nExample: 80 75 90"
             )
-
 
     elif context.user_data.get("mode") == "needed_score":
-    try:
-        regmid, regend, target = map(float, text.split())
+        try:
+            regmid, regend, target = map(float, text.split())
 
-        needed = calculate_needed_score(regmid, regend, target)
+            needed = calculate_needed_score(regmid, regend, target)
 
-        if needed == 0:
+            if needed == 0:
+                await update.message.reply_text(
+                    f"You already reached {target} points before final."
+                )
+            elif needed > 100:
+                await update.message.reply_text(
+                    f"Current weighted score: {round(regmid * 0.3 + regend * 0.3, 2)}\n"
+                    f"Target score: {target}\n"
+                    f"You need {needed} on final.\n"
+                    f"Unfortunately, this is more than 100, so the target is not possible."
+                )
+            else:
+                await update.message.reply_text(
+                    f"Current weighted score: {round(regmid * 0.3 + regend * 0.3, 2)}\n"
+                    f"Target score: {target}\n"
+                    f"You need {needed} on final."
+                )
+
+            context.user_data.clear()
+
+        except ValueError:
             await update.message.reply_text(
-                f"You already reached {target} points before final."
+                "Please enter 3 numbers correctly.\nExample: 80 75 70"
             )
-        elif needed > 100:
-            await update.message.reply_text(
-                f"Current weighted score: {round(regmid * 0.3 + regend * 0.3, 2)}\n"
-                f"Target score: {target}\n"
-                f"You need {needed} on final.\n"
-                f"Unfortunately, this is more than 100, so the target is not possible."
-            )
-        else:
-            await update.message.reply_text(
-                f"Current weighted score: {round(regmid * 0.3 + regend * 0.3, 2)}\n"
-                f"Target score: {target}\n"
-                f"You need {needed} on final."
-            )
-
-        context.user_data.clear()
-
-    except ValueError:
-        await update.message.reply_text(
-            "Please enter 3 numbers correctly.\nExample: 80 75 70"
-        )
 
     # ATTENDANCE
 
-    elif context.user_data.get("mode") == "calculate_attendance":
-    try:
-        total_classes, missed_classes = map(int, text.split())
-
-        if total_classes <= 0 or missed_classes < 0 or missed_classes > total_classes:
-            await update.message.reply_text("Please enter correct numbers.")
-            return
-
-        attended = total_classes - missed_classes
-        attendance = calculate_attendance(total_classes, missed_classes)
-        status = check_attendance_status(attendance)
-
+    elif text == "Calculate Attendance":
+        context.user_data["mode"] = "calculate_attendance"
         await update.message.reply_text(
-            f"Total classes: {total_classes}\n"
-            f"Missed classes: {missed_classes}\n"
-            f"Attended classes: {attended}\n\n"
-            f"Attendance: {attendance}%\n"
-            f"Status: {status}"
-        )
-
-        context.user_data.clear()
-
-    except ValueError:
-        await update.message.reply_text(
-            "Please enter 2 numbers correctly.\nExample: 30 5"
+            "Enter total classes and missed classes separated by spaces.\n"
+            "Example: 30 5"
         )
 
     elif text == "Allowed Absences":
         context.user_data["mode"] = "allowed_absences"
         await update.message.reply_text(
-            "Enter total classes and missed classes separated by spaces.\nExample: 30 5"
+            "Enter total classes and missed classes separated by spaces.\n"
+            "Example: 30 5"
         )
 
     elif context.user_data.get("mode") == "calculate_attendance":
@@ -193,15 +167,16 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text("Please enter correct numbers.")
                 return
 
+            attended = total_classes - missed_classes
             attendance = calculate_attendance(total_classes, missed_classes)
-
-            if attendance >= 70:
-                status = "OK"
-            else:
-                status = "Warning: below 70%"
+            status = check_attendance_status(attendance)
 
             await update.message.reply_text(
-                f"Your attendance is: {attendance}%\nStatus: {status}"
+                f"Total classes: {total_classes}\n"
+                f"Missed classes: {missed_classes}\n"
+                f"Attended classes: {attended}\n\n"
+                f"Attendance: {attendance}%\n"
+                f"Status: {status}"
             )
 
             context.user_data.clear()
@@ -237,7 +212,9 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text == "Add Deadline":
         context.user_data["mode"] = "add_deadline"
         await update.message.reply_text(
-            "Enter deadline in this format:\nSubject - Date\nExample: Python Project - 25 May"
+            "Enter deadline in this format:\n"
+            "Subject - Date\n"
+            "Example: Python Project - 25 May"
         )
 
     elif text == "View Deadlines":
@@ -256,7 +233,8 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text == "Delete Deadline":
         context.user_data["mode"] = "delete_deadline"
         await update.message.reply_text(
-            "Enter the number of the deadline you want to delete.\nUse View Deadlines to see numbers."
+            "Enter the number of the deadline you want to delete.\n"
+            "Use View Deadlines to see numbers."
         )
 
     elif context.user_data.get("mode") == "add_deadline":
@@ -310,7 +288,9 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text == "Add Schedule":
         context.user_data["mode"] = "add_schedule"
         await update.message.reply_text(
-            "Enter schedule in this format:\nDay - Subject - Time\nExample: Monday - Python - 10:00"
+            "Enter schedule in this format:\n"
+            "Day - Subject - Time\n"
+            "Example: Monday - Python - 10:00"
         )
 
     elif text == "View Schedule":
