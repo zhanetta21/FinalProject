@@ -82,28 +82,30 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     elif context.user_data.get("mode") == "calculate_total":
+    try:
+        regmid, regend, final = map(float, text.split())
 
-        try:
+        if regmid < 0 or regend < 0 or final < 0:
+            await update.message.reply_text("Scores cannot be negative.")
+            return
 
-            regmid, regend, final = map(float, text.split())
+        total = calculate_total(regmid, regend, final)
+        status = get_grade_status(total)
 
-            total = calculate_total(regmid, regend, final)
+        await update.message.reply_text(
+            f"Regmid: {regmid} × 0.3 = {round(regmid * 0.3, 2)}\n"
+            f"Regend: {regend} × 0.3 = {round(regend * 0.3, 2)}\n"
+            f"Final: {final} × 0.4 = {round(final * 0.4, 2)}\n\n"
+            f"Total score: {total}\n"
+            f"Grade: {status}"
+        )
 
-            status = get_grade_status(total)
+        context.user_data.clear()
 
-            await update.message.reply_text(
-
-                f"Regmid: {regmid}\n"
-
-                f"Regend: {regend}\n"
-
-                f"Final: {final}\n\n"
-
-                f"Total score: {total}\n"
-
-                f"Grade: {status}"
-
-            )
+    except ValueError:
+        await update.message.reply_text(
+            "Please enter 3 numbers correctly.\nExample: 80 75 90"
+        )
 
             context.user_data.clear()
 
@@ -118,50 +120,63 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     elif context.user_data.get("mode") == "needed_score":
+    try:
+        regmid, regend, target = map(float, text.split())
 
-        try:
+        needed = calculate_needed_score(regmid, regend, target)
 
-            regmid, regend, target = map(float, text.split())
-
-            needed = calculate_needed_score(regmid, regend, target)
-
-            if needed == 0:
-
-                await update.message.reply_text(
-
-                    f"You already reached {target} points."
-
-                )
-
-            else:
-
-                await update.message.reply_text(
-
-                    f"Current score: {regmid + regend}\n"
-
-                    f"Target score: {target}\n"
-
-                    f"You need {needed} points on final."
-
-                )
-
-            context.user_data.clear()
-
-
-        except ValueError:
-
+        if needed == 0:
             await update.message.reply_text(
-
-                "Please enter 3 numbers correctly.\nExample: 25 30 70"
-
+                f"You already reached {target} points before final."
             )
+        elif needed > 100:
+            await update.message.reply_text(
+                f"Current weighted score: {round(regmid * 0.3 + regend * 0.3, 2)}\n"
+                f"Target score: {target}\n"
+                f"You need {needed} on final.\n"
+                f"Unfortunately, this is more than 100, so the target is not possible."
+            )
+        else:
+            await update.message.reply_text(
+                f"Current weighted score: {round(regmid * 0.3 + regend * 0.3, 2)}\n"
+                f"Target score: {target}\n"
+                f"You need {needed} on final."
+            )
+
+        context.user_data.clear()
+
+    except ValueError:
+        await update.message.reply_text(
+            "Please enter 3 numbers correctly.\nExample: 80 75 70"
+        )
 
     # ATTENDANCE
 
-    elif text == "Calculate Attendance":
-        context.user_data["mode"] = "calculate_attendance"
+    elif context.user_data.get("mode") == "calculate_attendance":
+    try:
+        total_classes, missed_classes = map(int, text.split())
+
+        if total_classes <= 0 or missed_classes < 0 or missed_classes > total_classes:
+            await update.message.reply_text("Please enter correct numbers.")
+            return
+
+        attended = total_classes - missed_classes
+        attendance = calculate_attendance(total_classes, missed_classes)
+        status = check_attendance_status(attendance)
+
         await update.message.reply_text(
-            "Enter total classes and missed classes separated by spaces.\nExample: 30 5"
+            f"Total classes: {total_classes}\n"
+            f"Missed classes: {missed_classes}\n"
+            f"Attended classes: {attended}\n\n"
+            f"Attendance: {attendance}%\n"
+            f"Status: {status}"
+        )
+
+        context.user_data.clear()
+
+    except ValueError:
+        await update.message.reply_text(
+            "Please enter 2 numbers correctly.\nExample: 30 5"
         )
 
     elif text == "Allowed Absences":
