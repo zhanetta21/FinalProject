@@ -7,8 +7,6 @@ def main_menu_keyboard():
         ["Deadlines", "Schedule"]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-
-
 def grades_keyboard():
     keyboard = [
         ["Calculate Total"],
@@ -16,8 +14,6 @@ def grades_keyboard():
         ["Back"]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-
-
 def attendance_keyboard():
     keyboard = [
         ["Calculate Attendance"],
@@ -25,8 +21,6 @@ def attendance_keyboard():
         ["Back"]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-
-
 def deadlines_keyboard():
     keyboard = [
         ["Add Deadline"],
@@ -35,8 +29,6 @@ def deadlines_keyboard():
         ["Back"]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-
-
 def schedule_keyboard():
     keyboard = [
         ["Add Schedule"],

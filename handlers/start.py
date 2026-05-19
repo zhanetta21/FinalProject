@@ -218,15 +218,18 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Example: Python Project - 25 May"
         )
 
-    elif text == "View Deadlines":
-        deadlines = load_json(DEADLINES_FILE)
 
-        if not deadlines:
+    elif text == "View Deadlines":
+        user_id = str(update.message.from_user.id)
+        deadlines = load_json(DEADLINES_FILE)
+        user_deadlines = deadlines.get(user_id, [])
+
+        if not user_deadlines:
             await update.message.reply_text("You have no deadlines yet.")
+
         else:
             message = "Your deadlines:\n\n"
-
-            for index, item in enumerate(deadlines, start=1):
+            for index, item in enumerate(user_deadlines, start=1):
                 message += f"{index}. {item['subject']} - {item['date']}\n"
 
             await update.message.reply_text(message)
@@ -238,15 +241,18 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Use View Deadlines to see numbers."
         )
 
+
     elif context.user_data.get("mode") == "add_deadline":
+
         try:
             subject, date = text.split("-", 1)
-
+            user_id = str(update.message.from_user.id)
             deadlines = load_json(DEADLINES_FILE)
 
+            if user_id not in deadlines:
+                deadlines[user_id] = []
             deadline = Deadline(subject.strip(), date.strip())
-
-            deadlines.append({
+            deadlines[user_id].append({
                 "subject": deadline.title,
                 "date": deadline.date
             })
@@ -254,7 +260,6 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             save_json(DEADLINES_FILE, deadlines)
 
             await update.message.reply_text("Deadline added successfully.")
-
             context.user_data.clear()
 
         except ValueError:
@@ -262,26 +267,29 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Wrong format.\nExample: Python Project - 25 May"
             )
 
+
     elif context.user_data.get("mode") == "delete_deadline":
         try:
+            user_id = str(update.message.from_user.id)
             number = int(text)
-
             deadlines = load_json(DEADLINES_FILE)
+            user_deadlines = deadlines.get(user_id, [])
 
-            if number < 1 or number > len(deadlines):
+            if number < 1 or number > len(user_deadlines):
                 await update.message.reply_text("There is no deadline with this number.")
                 return
 
-            deleted = deadlines.pop(number - 1)
+            deleted = user_deadlines.pop(number - 1)
+            deadlines[user_id] = user_deadlines
             save_json(DEADLINES_FILE, deadlines)
 
             await update.message.reply_text(
                 f"Deleted: {deleted['subject']} - {deleted['date']}"
             )
-
             context.user_data.clear()
 
         except ValueError:
+
             await update.message.reply_text(
                 "Please enter only the number.\nExample: 1"
             )
